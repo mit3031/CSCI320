@@ -34,3 +34,28 @@ def view_collections() -> list[dict]:
         for r in rows
     ]
 
+# ----- RENAME -----------------------------------------------------------------
+def rename_collection(collection_id: int, new_name: str) -> dict | None:
+    sql = """
+        UPDATE collection
+        SET name = %s
+        WHERE collection_id = %s
+        RETURNING collection_id, name, creator_username;
+    """
+    conn = get_db()
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, (new_name, collection_id))
+            row = cur.fetchone()
+    if not row:
+        return None
+    return {"collection_id": row[0], "name": row[1], "creator_username": row[2]}
+
+# ----- DELETE ---------------------------------------------------------------
+def delete_collection(collection_id: int) -> bool:
+    sql = "DELETE FROM collection WHERE collection_id = %s;"
+    conn = get_db()
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, (collection_id,))
+            return cur.rowcount > 0
