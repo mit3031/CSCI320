@@ -4,7 +4,13 @@
 <nav>
     <h1><a href="{{ url_for('index') }}">Flaskr</a></h1>
     <ul>
-        <li><a href="{{ url_for('auth.register') }}">Register</a>
+        {% if current_user.is_authenticated %}
+            <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+        {% elif request.endpoint == 'auth.login' %}
+            <li><a href="{{ url_for('auth.register') }}">Register</a></li>
+        {% elif request.endpoint == 'auth.register' %}
+            <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+        {% endif %}
     </ul>
 </nav>
 <section class="content">
