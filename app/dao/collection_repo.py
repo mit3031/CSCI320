@@ -17,3 +17,20 @@ def create_collection(name: str, creator_username: str) -> dict:
         "name": row[1],
         "creator_username": row[2],
     }
+
+# ----- READ -----------------------------------------------------------------
+def view_collections() -> list[dict]:
+    sql = """
+        SELECT collection_id, name, creator_username
+        FROM collection
+        ORDER BY name ASC;
+    """
+    conn = get_db()
+    with conn.cursor() as cur:
+        cur.execute(sql)
+        rows = cur.fetchall()
+    return [
+        {"collection_id": r[0], "name": r[1], "creator_username": r[2]}
+        for r in rows
+    ]
+
