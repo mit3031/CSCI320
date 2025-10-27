@@ -19,6 +19,14 @@ def create():
 def view_collection_by_user(username):
     return jsonify(dao.view_collections(username)), 200
 
+@collections_bp.patch("/<int:cid>")
+def rename(cid):
+    new_name = (request.get_json(force=True) or {}).get("name", "").strip()
+    if not new_name: return {"error": "name required"}, 400
+    updated = dao.rename_collection(cid, new_name)
+    if not updated: abort(404)
+    return jsonify(updated)
+
 @collections_bp.delete("/<int:cid>")
 def delete(cid):
     ok = dao.delete_collection(cid)
