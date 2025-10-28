@@ -16,6 +16,10 @@ def verify_password(password: str, password_hash: str) -> bool:
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
+"""
+This is a routing function for registering new users into the system. It takes in the fields for a user and inserts it into the database
+using an SQL statement
+"""
 @bp.route("/register", methods=["GET", "POST"])
 def register():
     print("Entered register route")
@@ -87,6 +91,10 @@ def register():
     
     return render_template("auth/register.html")
 
+"""
+This is a routing function for logging into the system. It takes in two fields, username and password, then checks the databasee if those exists.
+If it does it updates last_login column and creates a session for the user. Redirects them to homepage
+"""
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     print("Entered login route")
@@ -120,14 +128,14 @@ def login():
                 print(f"DB result: {user_data}") # Shows if the user exists or not
 
                 if not user_data:
-                    flash("Username not found.")
+                    flash("Incorrect Username or Password")
                     return render_template("auth/login.html")
 
                 db_username, db_password_hash = user_data
 
                 # Verify  password
                 if not verify_password(password, db_password_hash):
-                    flash("Incorrect password.")
+                    flash("Incorrect Username or Password")
                     return render_template("auth/login.html")
 
                 # Update last_login 
@@ -155,6 +163,10 @@ def login():
 
     return render_template("auth/login.html")
 
+"""
+This is a routing function for logging out, and when called it will end the user session and redirect them back to the 
+login page of the website.
+"""
 @bp.route("/logout")
 def logout():
     if current_user.is_authenticated:
