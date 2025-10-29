@@ -35,6 +35,8 @@ def create_app(test_config=None):
     
     from . import db
     from . import auth
+    from . import profile
+    from . import home
 
     try:
         db.init_db(app)
@@ -45,6 +47,8 @@ def create_app(test_config=None):
     print("Login manager initialized")
 
     app.register_blueprint(auth.bp)
+    app.register_blueprint(profile.bp)
+    app.register_blueprint(home.bp)
 
     app.add_url_rule("/", endpoint="index")
 

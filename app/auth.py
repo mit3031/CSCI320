@@ -153,7 +153,7 @@ def login():
 
                 print(f"User {db_username} successfully logged in.") # We did it
                 flash("Login successful!")
-                return username # this is a place holder for our theoretical homepage (shoudl redirect you to the homepage once it's made)
+                return redirect(url_for("home.index"))
 
         except psycopg.Error as e:
             db_conn.rollback()

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container" style="text-align:center; margin-top: 60px;">
+    <h1>Welcome, {{ username }}!</h1>
+    <p style="color: #555;">Select an option below to get started.</p>
+
+    <div style="margin-top: 40px; display: flex; flex-direction: column; gap: 20px; align-items: center;">
+        <!---- User Profile Links -->
+        <a href="{{ url_for('profile.view_profile') }}" class="btn" style="width: 200px;">View Profile</a>
+        <a href="{{ url_for('profile.search_user') }}" class="btn" style="width: 200px;">Search Users</a>
+
+        <!-- Placeholder links for other components -->
+        <a href="#" class="btn" style="width: 200px; background-color: #ccc;">My Collections</a>
+        <a href="#" class="btn" style="width: 200px; background-color: #ccc;">Browse Songs</a>
+        <a href="#" class="btn" style="width: 200px; background-color: #ccc;">Placeholder</a>
+        <a href="#" class="btn" style="width: 200px; background-color: #ccc;">Placeholder</a>
+    </div>
+</div>
+
+<style>
+    .btn {
+        display: inline-block;
+        background-color: #007BFF;
+        color: white;
+        text-decoration: none;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: background-color 0.2s ease;
+    }
+    .btn:hover {
+        background-color: #0056b3;
+    }
+</style>
+{% endblock %}
