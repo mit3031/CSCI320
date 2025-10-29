@@ -5,19 +5,11 @@ def create_collection(name: str, creator_username: str) -> dict:
     sql = """
         INSERT INTO collection (name, creator_username)
         VALUES (%s, %s)
-        RETURNING collection_id, name, creator_username;
     """
     conn = get_db()
     with conn:
         with conn.cursor() as cur:
             cur.execute(sql, (name, creator_username))
-            row = cur.fetchone()
-
-    return {
-        "collection_id": row[0],
-        "name": row[1],
-        "creator_username": row[2],
-    }
 
 # ----- READ -----------------------------------------------------------------
 def view_collections(creator_username: str) -> list[dict]:
@@ -62,3 +54,65 @@ def delete_collection(collection_id: int) -> bool:
         with conn.cursor() as cur:
             cur.execute(sql, (collection_id,))
             return cur.rowcount > 0
+
+def get_collection_tracks(collection_id: int) -> list:
+    sql = """
+        SELECT c.name AS collection_name,
+        s.title AS song_title,
+        a.name AS artist,
+        ab.name as album,
+        s.length as length
+    FROM collection c
+    JOIN ispartofcollection ipc ON c.collection_id = ipc.collection_id
+    JOIN song s ON ipc.song_id = s.song_id
+    JOIN makesong ms ON s.song_id = ms.song_id
+    JOIN artist a ON ms.artist_id = a.artist_id
+    JOIN ispartofalbum ipa ON ipa.song_id = s.song_id
+    JOIN album ab ON ab.album_id = ipa.album_id
+    WHERE c.collection_id = %s;
+    """
+    conn = get_db()
+    with conn.cursor() as cur:
+        cur.execute(sql, (collection_id,))
+        rows = cur.fetchall()
+    
+    return [{
+        "collection_name": r[0],
+        "song": r[1],
+        "artist": r[2],
+        "album": r[3],
+        "length": r[4],
+    } for r in rows]
+
+def get_collection_info(collection_id: int):
+    sql = """
+    SELECT COUNT(s.song_id) as num_song, SUM(s.length) as tot_length
+    FROM ispartofcollection ipc
+    JOIN song s ON ipc.song_id = s.song_id
+    WHERE ipc.collection_id = %s
+    """
+    conn = get_db()
+    with conn.cursor() as cur:
+        cur.execute(sql, (collection_id,))
+        row = cur.fetchone()
+    
+    return row
+
+def get_track_info(song_id: int) -> list[dict]:
+    sql = """
+        SELECT title, release_date, length, is_explicit
+        FROM song
+        WHERE song_id = %s
+    """
+
+    conn = get_db()
+    with conn.cursor() as cur:
+        cur.execute(sql, (song_id,))
+        rows = cur.fetchall()
+    
+    return [{
+        'title': r[0],
+        'release_date': r[1],
+        'length': r[2],
+        'is_explicit': r[4],
+    } for r in rows]

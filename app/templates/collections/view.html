@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 
-{% block header %}
-<h1 style="text-align: center; margin-bottom: 20px;">View Collections</h1>
-{% endblock %}
-
 {% block content %}
-<div>
-    <form method="POST" action="{{ url_for('.create_collection') }}">
-        <label>Create New Collection</label>
-        <input id="collection-name" name='name' placeholder="Enter new collection name" required>
-        <input type="submit" value="Create">
-    </form>
+<div style="max-width: 600px; margin: auto; padding: 25px; border: 1px solid #ddd; border-radius: 12px; background-color: #f9f9f9; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+    <h3>{{ tracks[0]['collection_name'] }}</h3>
+    {% for track in tracks %}
+    <hr style="margin: 20px 0; border-color: #ccc;">
+    <h5>Track {{ loop.index }}
+    <h5>{{ track['song'] }}</h5>
+    <h5>{{ track['artist'] }}</h5>
+    <h5>{{ track['album'] }}</h5>
+    <h5>{{ track['length'] }} seconds</h5>
+    {% endfor %}
 </div>
 {% endblock %}
