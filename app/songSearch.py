@@ -21,6 +21,7 @@ from .db import get_db
 bp = Blueprint("search", __name__, url_prefix="/search")
 
 # Things left to implement:
+#   Update SQL statements and filtering loop to include album, length, and listen count
 #   Rendering the results
 
 #
@@ -62,12 +63,13 @@ def search():
             
                 elif search_by == "album":
                     curs.execute(
-                        'SELECT s.name, ar.name, s.song_id ' \
+                        'SELECT s.name, ar.name, al.name, s.length, s.song_id ' \
                         'FROM "album" AS al'
                         'INNER JOIN "ispartofalbum" AS i ON i.album_id = al.album_id '
                         'INNER JOIN "song" AS s ON s.song_id = i.song_id '
                         'INNER JOIN "makesong" AS m ON s.song_id = m.song_id ' \
-                        'INNER JOIN "artist" AS ar ON ar.artist_id = m.artist_id '
+                        'INNER JOIN "artist" AS ar ON ar.artist_id = m.artist_id ' \
+                        'INNER JOIN "listentosong" AS l ON s.song_id = l.song_id'
                         'WHERE al.name = "%%%s%%" '
                         'ORDER BY s.name ASC, ar.name ASC',
                         (search_term)
