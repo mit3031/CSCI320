@@ -35,6 +35,7 @@ def create_app(test_config=None):
     
     from . import db
     from . import auth
+    from . import collections
 
     try:
         db.init_db(app)
@@ -45,6 +46,7 @@ def create_app(test_config=None):
     print("Login manager initialized")
 
     app.register_blueprint(auth.bp)
+    app.register_blueprint(collections.bp)
 
     app.add_url_rule("/", endpoint="index")
 
