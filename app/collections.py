@@ -10,15 +10,16 @@ bp = Blueprint("collections", __name__, url_prefix="/collections")
 @bp.route("/", methods=["GET", "POST"])
 @login_required
 def collections_home():
-    return render_template("collections/view.html")
+    collections = dao.view_collections(current_user.id)
+    return render_template("collections/view.html", collections=collections)
 
 @bp.route("/create", methods=["POST"])
 @login_required
-def create():
+def create_collection():
     name = request.form['name'].strip()
     dao.create_collection(name, current_user.id)
 
-    return redirect(url_for("collections"))
+    return redirect(url_for(".collections_home"))
 
 @bp.get("/user/<username>")
 @login_required
