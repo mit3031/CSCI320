@@ -41,23 +41,26 @@ def search():
             with db_conn.cursor as curs:
                 if search_by == "name":
                     curs.execute(
-                        'SELECT s.name, a.name, s.song_id ' \
+                        'SELECT s.name, ar.name, al.name, s.length, s.song_id ' \
                         'FROM "song" AS s ' \
                         'INNER JOIN "makesong" AS m ON s.song_id = m.song_id ' \
-                        'INNER JOIN "artist" AS a ON a.artist_id = m.artist_id'
+                        'INNER JOIN "artist" AS ar ON ar.artist_id = m.artist_id' \
+                        'INNER JOIN "ispartofalbum" AS i ON s.song_id = i.song_id ' \
+                        'INNER JOIN "album" AS al ON al.album_id = i.album_id '
                         'WHERE s.name = "%%%s%%"' \
-                        'ORDER BY s.name ASC, a.name ASC',
+                        'ORDER BY s.name ASC, ar.name ASC',
                         (search_term)
                     )
 
                 elif search_by == "artist":
                     curs.execute(
-                        'SELECT s.name, a.name, s.song_id ' \
+                        'SELECT s.name, ar.name, al.name, s.length, s.song_id ' \
                         'FROM "song" AS s ' \
                         'INNER JOIN "makesong" AS m ON s.song_id = m.song_id ' \
-                        'INNER JOIN "artist" AS a ON a.artist_id = m.artist_id'
-                        'WHERE a.name = "%%%s%%"' \
-                        'ORDER BY s.name ASC, a.name ASC',
+                        'INNER JOIN "artist" AS ar ON ar.artist_id = m.artist_id' \
+                        'INNER JOIN "ispartofalbum" AS al ON al.song_id = s.song_id' \
+                        'WHERE ar.name = "%%%s%%"' \
+                        'ORDER BY s.name ASC, ar.name ASC',
                         (search_term)
                     )
             
@@ -69,7 +72,6 @@ def search():
                         'INNER JOIN "song" AS s ON s.song_id = i.song_id '
                         'INNER JOIN "makesong" AS m ON s.song_id = m.song_id ' \
                         'INNER JOIN "artist" AS ar ON ar.artist_id = m.artist_id ' \
-                        'INNER JOIN "listentosong" AS l ON s.song_id = l.song_id'
                         'WHERE al.name = "%%%s%%" '
                         'ORDER BY s.name ASC, ar.name ASC',
                         (search_term)
@@ -87,19 +89,21 @@ def search():
                         'ORDER BY s.name ASC, a.name ASC',
                         (search_term)
                     )
-
+                
+                # songs[x] = [song name, artist, album, song length, times played, song_id]
                 songs = curs.fetchall()
                 song_ids, search_results = {}
 
                 # Organize search results
                 for song in songs:
                     # check if the song is not already in results
-                    if song[2] not in song_ids:
-                        search_results.append([song[0], song[1]]) # Not in results - add it
-                        song_ids.append(song[2])
+                    if song[5] not in song_ids:
+                        # Not in results - add it
+                        search_results.append([song[0], song[1], song[2], song[3], song[4]])
+                        song_ids.append(song[5])
                     else:
                         # In results - add the artist
-                        search_results[search_results.index(song[2])][1] += ", " + song[1]
+                        search_results[search_results.index(song[5])][1] += ", " + song[1]
             
                 db_conn.commit()
         except psycopg.Error as e:
