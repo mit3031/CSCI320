@@ -18,24 +18,21 @@ from flask_login import login_required, login_user, logout_user, current_user
 from .models import User
 from .db import get_db
 
+bp = Blueprint("search", __name__, url_prefix="/search")
+
 # Things left to implement:
-#   Routing & receiving input
 #   Rendering the results
 
 #
 # Searches the database for songs that contain a search term in a given field
+# "searchBy" field should only ever be "name", "artist", "album", or "genre"
 # Author: Joseph Britton (jtb8595)
 #
-
-bp = Blueprint("search", __name__, url_prefix="/search")
-
-# routing goes here
 @bp.route("/", method=["GET", "POST"])
 @login_required
 def search():
     if request.methon == "POST":
         search_term = request.form["search"].strip() # Whatever's in the search bar
-        # Add some way to determine what field of the songs is being searched
         search_by = request.form["searchBy"].strip() # Replace when above comment is implemented
     
         db_conn = get_db()
