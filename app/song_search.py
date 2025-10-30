@@ -1,9 +1,4 @@
 #
-# TO-DO: 
-#   Finish search (remaining features listed in block comment)
-#
-
-#
 # Implements the search queries for songs
 # Author: Joseph Britton (jtb8595)
 #
@@ -25,12 +20,12 @@ bp = Blueprint("search", __name__, url_prefix="/search")
 # "searchBy" field should only ever be "name", "artist", "album", or "genre"
 # Author: Joseph Britton (jtb8595)
 #
-@bp.route("/search", method=["GET", "POST"])
+@bp.route("/search", methods=["GET", "POST"])
 @login_required
 def search_songs():
     if request.methon == "POST":
         search_term = request.form["search"].strip() # Whatever's in the search bar
-        search_by = request.form["search_by"].strip() # Replace when above comment is implemented
+        search_by = request.form["search_by"].strip()
         
     
         db_conn = get_db()
@@ -114,4 +109,4 @@ def search_songs():
             flash(f"Database error: {e}")
             return f"Database error: {e}", 500
     
-    return render_template("search/results.html", results=search_results) # Replace with proper webpage render or w/e
+    return render_template("search/results.html", results=search_results)
