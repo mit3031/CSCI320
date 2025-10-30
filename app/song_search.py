@@ -9,9 +9,6 @@
 #
 
 import psycopg
-import bcrypt
-import datetime
-import time
 
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 from flask_login import login_required, login_user, logout_user, current_user
@@ -21,7 +18,6 @@ from .db import get_db
 bp = Blueprint("search", __name__, url_prefix="/search")
 
 # Things left to implement:
-#   Update SQL statements to include listen count when implemented
 #   Rendering the results (should be implemented, unchecked due to new routing scrambling the flask)
 
 #
@@ -35,64 +31,69 @@ def search_songs():
     if request.methon == "POST":
         search_term = request.form["search"].strip() # Whatever's in the search bar
         search_by = request.form["search_by"].strip() # Replace when above comment is implemented
+        
     
         db_conn = get_db()
         try:
             with db_conn.cursor as curs:
                 if search_by == "name":
                     curs.execute(
-                        'SELECT s.name, ar.name, al.name, s.length, s.song_id ' \
+                        'SELECT s.name, ar.name, al.name, s.length, COUNT(l.datetime_listened), s.song_id ' \
                         'FROM "song" AS s ' \
                         'INNER JOIN "makesong" AS m ON s.song_id = m.song_id ' \
                         'INNER JOIN "artist" AS ar ON ar.artist_id = m.artist_id' \
                         'INNER JOIN "ispartofalbum" AS i ON s.song_id = i.song_id ' \
-                        'INNER JOIN "album" AS al ON al.album_id = i.album_id '
-                        'WHERE s.name = "%%%s%%"' \
+                        'INNER JOIN "album" AS al ON al.album_id = i.album_id ' \
+                        'INNER JOIN "listentosong" AS l ON l.song_id = s.song_id ' \
+                        'WHERE s.name = "%%%s%%", l.username = "%s"' \
                         'ORDER BY s.name ASC, ar.name ASC',
-                        (search_term)
+                        (search_term, current_user)
                     )
 
                 elif search_by == "artist":
                     curs.execute(
-                        'SELECT s.name, ar.name, al.name, s.length, s.song_id ' \
+                        'SELECT s.name, ar.name, al.name, s.length, COUNT(l.datetime_listened), s.song_id ' \
                         'FROM "song" AS s ' \
                         'INNER JOIN "makesong" AS m ON s.song_id = m.song_id ' \
                         'INNER JOIN "artist" AS ar ON ar.artist_id = m.artist_id' \
-                        'INNER JOIN "ispartofalbum" AS al ON al.song_id = s.song_id' \
-                        'WHERE ar.name = "%%%s%%"' \
+                        'INNER JOIN "ispartofalbum" AS al ON al.song_id = s.song_id ' \
+                        'INNER JOIN "listentosong" AS l ON l.song_id = s.song_id ' \
+                        'WHERE ar.name = "%%%s%%", l.username = "%s"' \
                         'ORDER BY s.name ASC, ar.name ASC',
-                        (search_term)
+                        (search_term, current_user)
                     )
             
                 elif search_by == "album":
                     curs.execute(
-                        'SELECT s.name, ar.name, al.name, s.length, s.song_id ' \
+                        'SELECT s.name, ar.name, al.name, s.length, COUNT(l.datetime_listened), s.song_id ' \
                         'FROM "album" AS al'
                         'INNER JOIN "ispartofalbum" AS i ON i.album_id = al.album_id '
                         'INNER JOIN "song" AS s ON s.song_id = i.song_id '
                         'INNER JOIN "makesong" AS m ON s.song_id = m.song_id ' \
                         'INNER JOIN "artist" AS ar ON ar.artist_id = m.artist_id ' \
-                        'WHERE al.name = "%%%s%%" '
+                        'INNER JOIN "listentosong" AS l ON l.song_id = s.song_id ' \
+                        'WHERE al.name = "%%%s%%", l.username = "%s" ' \
                         'ORDER BY s.name ASC, ar.name ASC',
-                        (search_term)
+                        (search_term, current_user)
                     )
 
                 elif search_by == "genre":
                     curs.execute(
-                        'SELECT s.name, ar.name, al.name, s.length, s.song_id ' \
+                        'SELECT s.name, ar.name, al.name, s.length, COUNT(l.datetime_listened), s.song_id ' \
                         'FROM "genre" AS g'
                         'INNER JOIN "songhasgenre" AS h ON h.genre_id = g.genre_id '
                         'INNER JOIN "song" AS s ON s.song_id = h.song_id '
                         'INNER JOIN "makesong" AS m ON s.song_id = m.song_id ' \
                         'INNER JOIN "artist" AS ar ON ar.artist_id = m.artist_id ' \
                         'INNER JOIN "ispartofalbum" AS i ON s.song_id = i.song_id ' \
-                        'INNER JOIN ""album" AS al ON i.album_id = al.album_id'
-                        'WHERE g.name = "%%%s%%" '
+                        'INNER JOIN "album" AS al ON i.album_id = al.album_id ' \
+                        'INNER JOIN "listentosong" AS l ON l.song_id = s.song_id ' \
+                        'WHERE g.name = "%%%s%%", l.username = "%s" ' \
                         'ORDER BY s.name ASC, ar.name ASC',
-                        (search_term)
+                        (search_term, current_user)
                     )
                 
-                # songs[x] = [song name, artist, album, song length, song_id]
+                # songs[x] = [song name, artist, album, song length, times listened, song_id]
                 songs = curs.fetchall()
                 song_ids, search_results = {}
 
@@ -101,11 +102,11 @@ def search_songs():
                     # check if the song is not already in results
                     if song[5] not in song_ids:
                         # Not in results - add it
-                        search_results.append([song[0], song[1], song[2], song[3]])
+                        search_results.append([song[0], song[1], song[2], song[3], song[4]])
                         song_ids.append(song[5])
                     else:
                         # In results - add the artist
-                        search_results[search_results.index(song[4])][1] += ", " + song[1]
+                        search_results[search_results.index(song[5])][1] += ", " + song[1]
             
                 db_conn.commit()
         except psycopg.Error as e:
