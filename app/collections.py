@@ -36,6 +36,21 @@ def view_collection(cid):
     tracks = dao.get_collection_tracks(cid)
     return render_template("collections/view.html", tracks=tracks)
 
+@bp.route("/remove/<int:cid>/<int:song_id>", methods=["POST"])
+@login_required
+def delete_track_from_collection(cid: int, song_id):
+    dao.remove_song_from_collection(cid, song_id)
+
+    return redirect(url_for(".view_collection", cid=cid))
+
+@bp.route("/remove/album/<int:cid>/", methods=["POST"])
+@login_required
+def delete_album_from_collection(cid: int):
+    album_name = request.form['delete-album-col'].strip()
+    dao.remove_album_from_collection(cid, album_name)
+
+    return redirect(url_for(".view_collection", cid=cid))
+
 @bp.get("/user/<username>")
 @login_required
 def view_collection_by_user(username):
@@ -44,15 +59,15 @@ def view_collection_by_user(username):
 @bp.route("/rename/<int:cid>", methods=["POST"])
 @login_required
 def rename_collection(cid):
-    new_name = (request.get_json(force=True) or {}).get("name", "").strip()
-    if not new_name: return {"error": "name required"}, 400
-    updated = dao.rename_collection(cid, new_name)
-    if not updated: abort(404)
-    return jsonify(updated)
+    new_name = request.form['collection-rename'].strip()
+    dao.rename_collection(cid, new_name)
+
+    return redirect(url_for(".view_collection", cid=cid))
 
 @bp.route("/delete/<int:cid>", methods=["POST"])
 @login_required
 def delete_collection(cid):
-    ok = dao.delete_collection(cid)
+    dao.delete_collection(cid)
+
     return redirect(url_for(".collections_home"))
 
