@@ -3,7 +3,13 @@
 {% block content %}
 <div style="max-width: 600px; margin: auto; padding: 25px; border: 1px solid #ddd; border-radius: 12px; background-color: #f9f9f9; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
     <div>
-        <h3>{{ tracks[0]['collection_name'] }}</h3>
+        <div>
+            <h3>{{ tracks[0]['collection_name'] }}</h3>
+            <form method="POST" action="{{ url_for('play.play_collection', cid=tracks[0]['cid']) }}">
+                <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+                <input type="submit" value="Play Collection">
+            </form>
+        </div>
         <div>
             <form method="POST" action="{{ url_for('.rename_collection', cid=tracks[0]['cid']) }}">
                 <label>Rename Collection</label>
@@ -24,6 +30,10 @@
     <h5>{{ track['artist'] }}</h5>
     <h5>{{ track['album'] }}</h5>
     <h5>{{ track['length'] }} seconds</h5>
+    <form method="POST" action="{{ url_for('play.play_song', song_id=track['song_id']) }}">
+        <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+        <button type="submit">Play</button>
+    </form>
     <form method="POST" action="{{ url_for('.delete_track_from_collection', cid=track['cid'], song_id=track['song_id'])}}">
         <button type="submit">Delete</button>
     </form>
