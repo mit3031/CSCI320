@@ -1,0 +1,21 @@
+<!--
+Page to list the results of a search
+Author: Joseph Britton (jtb8595)
+-->
+
+{% extends 'base.html' %}
+
+{% block header %}
+<h1>{% block title %}Song Search Results{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+{% for result in results %}
+    <h3>{{ result['name'] }}</h3>
+    <h5>By {{ result['artist'] }}</h5>
+    <h5>Part of {{ result['album'] }}</h5>
+    <h5>Length: {{ result['length'] }}</h5>
+    <h5>Listened to {{ result['listened'] }} times</h5>
+{% endfor %}
+
+{% endblock %}

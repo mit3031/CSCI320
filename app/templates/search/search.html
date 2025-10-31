@@ -1,0 +1,27 @@
+<!-- 
+Form to search for songs
+Author: Joseph Britton (jtb8595)
+-->
+
+{% extends 'base.html' %}
+
+{% block header %}
+<h1>{% block title %}Song Search{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<form method="post" action="{{ url_for('search.search_songs') }}">
+    <label for="search">Search Term</label>
+    <input name="search" id="search">
+
+    <label for="search_by">Search in</label>
+    <select name="search_by" id="search_by">
+        <option value="name">Song name</option>
+        <option value="artist">Artist name</option>
+        <option value="album">Album name</option>
+        <option value="genre">Genre name</option>
+    </select>
+
+    <input type="submit" value="Search">
+</form>
+{% endblock %}
