@@ -447,7 +447,7 @@ def sync_music(con):
             "INSERT INTO albumhasgenre(album_id, genre_id) VALUES (%s, %s) ON CONFLICT DO NOTHING",
             new_albumgenre,
         )
-        
+
     con.commit()
 
 def populate_is_part_of_collection(con, n=5000):
@@ -517,25 +517,24 @@ def main():
         start_ssh()
         con = get_con()
         
-        #populate_users(con)
-        #populate_artists(con)
-        #populate_genres(con)
-        #populate_songs(con)
-        #populate_albums(con)
-        #populate_collections(con)
-        #populate_follow_users(con)
+        populate_users(con)
+        populate_artists(con)
+        populate_genres(con)
+        populate_songs(con)
+        populate_albums(con)
+        populate_collections(con)
+        populate_follow_users(con)
         populate_make_song(con)
         populate_make_album(con)
         populate_is_part_of_album(con)
         populate_song_has_genre(con)
         populate_album_has_genre(con)
         sync_music(con)
-        #populate_is_part_of_collection(con)
-        #populate_listen_to_song(con)
-        #populate_song_rating(con)
+        populate_is_part_of_collection(con)
+        populate_listen_to_song(con)
+        populate_song_rating(con)
         
         con.close()
-        
     except Exception as e:
         print(f"Error: {e}")
         raise
