@@ -55,7 +55,7 @@ def delete_collection(collection_id: int):
 
 def get_collection_tracks(collection_id: int) -> list:
     sql = """
-        SELECT c.collection_id as cid,
+    SELECT c.collection_id as cid,
         c.name AS collection_name,
         s.song_id AS song_id,
         s.title AS song_title,
@@ -63,22 +63,25 @@ def get_collection_tracks(collection_id: int) -> list:
         a.name AS artist,
         ab.album_id AS album_id,
         ab.name AS album,
-        s.length AS length
+        s.length AS length,
+        g.name AS genre
     FROM collection c
-    JOIN ispartofcollection ipc ON c.collection_id = ipc.collection_id
-    JOIN song s ON ipc.song_id = s.song_id
-    JOIN makesong ms ON s.song_id = ms.song_id
-    JOIN artist a ON ms.artist_id = a.artist_id
-    JOIN ispartofalbum ipa ON ipa.song_id = s.song_id
-    JOIN album ab ON ab.album_id = ipa.album_id
+    LEFT OUTER JOIN ispartofcollection ipc ON c.collection_id = ipc.collection_id
+    LEFT OUTER JOIN song s ON ipc.song_id = s.song_id
+    LEFT OUTER JOIN makesong ms ON s.song_id = ms.song_id
+    LEFT OUTER JOIN artist a ON ms.artist_id = a.artist_id
+    LEFT OUTER JOIN ispartofalbum ipa ON ipa.song_id = s.song_id
+    LEFT OUTER JOIN album ab ON ab.album_id = ipa.album_id
+    LEFT OUTER JOIN songhasgenre shg ON shg.song_id = s.song_id
+    LEFT OUTER JOIN genre g ON g.genre_id = shg.genre_id
     WHERE c.collection_id = %s;
     """
     conn = get_db()
     with conn.cursor() as cur:
         cur.execute(sql, (collection_id,))
         rows = cur.fetchall()
-    
-    return [{
+
+    collections = [{
         "cid": r[0],
         "collection_name": r[1],
         "song_id": r[2],
@@ -88,7 +91,11 @@ def get_collection_tracks(collection_id: int) -> list:
         "album_id": r[6],
         "album": r[7],
         "length": r[8],
+        "genre": r[9],
     } for r in rows]
+    print(rows)
+
+    return collections
 
 def get_collection_info(collection_id: int):
     sql = """

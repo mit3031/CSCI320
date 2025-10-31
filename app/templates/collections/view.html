@@ -6,7 +6,7 @@
         <div>
             <h3>{{ tracks[0]['collection_name'] }}</h3>
             <form method="POST" action="{{ url_for('play.play_collection', cid=tracks[0]['cid']) }}">
-                <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+                <input type="hidden" name="next" value="{{ request.full_path }}">
                 <input type="submit" value="Play Collection">
             </form>
         </div>
@@ -30,8 +30,9 @@
     <h5>{{ track['artist'] }}</h5>
     <h5>{{ track['album'] }}</h5>
     <h5>{{ track['length'] }} seconds</h5>
+    <h5>{{ track['genre'] }}</h5>
     <form method="POST" action="{{ url_for('play.play_song', song_id=track['song_id']) }}">
-        <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+        <input type="hidden" name="next" value="{{ request.full_path }}">
         <button type="submit">Play</button>
     </form>
     <form method="POST" action="{{ url_for('.delete_track_from_collection', cid=track['cid'], song_id=track['song_id'])}}">
