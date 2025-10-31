@@ -177,6 +177,10 @@ def sort_songs():
         "genre": "g"
     }
     search_alias = alias_map.get(search_by, "so")
+    if search_alias == "so":
+        search_col = "title"
+    else:
+        search_col = "name"
 
     try:
         with db_conn.cursor() as curs:
@@ -196,7 +200,7 @@ def sort_songs():
                 INNER JOIN "album" AS al ON al.album_id = i.album_id
                 LEFT JOIN "songhasgenre" AS h ON so.song_id = h.song_id
                 LEFT JOIN "genre" AS g ON g.genre_id = h.genre_id
-                WHERE {search_alias}.name ILIKE %s
+                WHERE {search_alias}.{search_col} ILIKE %s
                 GROUP BY so.song_id, so.title, so.length, so.release_date
                 ORDER BY {order_col} {order_dir}
             '''
