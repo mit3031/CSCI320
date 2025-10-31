@@ -27,18 +27,29 @@ def create_collection():
 
     return redirect(url_for(".collections_home"))
 
-@bp.route("/modify/<int:cid>", methods=["GET", "POST"])
-@login_required
-def modify_collection(cid: int):
-    print(request.method)
-    print("hi")
-    return render_template("collections/modify.html")
-
 @bp.route("/<int:cid>", methods=["GET", "POST"])
 @login_required
 def view_collection(cid):
     tracks = dao.get_collection_tracks(current_user.id, cid)
-    return render_template("collections/view.html", tracks=tracks)
+    return render_template("collections/view.html", cid=cid, tracks=tracks)
+
+@bp.route("/add-albums/<int:cid>", methods=["GET", "POST"])
+@login_required
+def add_albums_view(cid: int):
+    if request.method == "POST":
+        query = request.form['album'].strip()
+
+        albums = dao.get_albums(query)
+        return render_template('collections/modify.html', albums=albums, cid=cid)
+
+    return render_template('collections/modify.html')
+
+@bp.route("add-albums/<int:cid>/<int:aid>", methods=["POST"])
+@login_required
+def add_albums(cid: int, aid: int):
+    dao.add_album_to_collection(cid, aid)
+
+    return redirect(url_for('.view_collection', cid=cid))
 
 @bp.route("/remove/<int:cid>/<int:song_id>", methods=["POST"])
 @login_required
@@ -46,6 +57,19 @@ def delete_track_from_collection(cid: int, song_id):
     dao.remove_song_from_collection(cid, song_id)
 
     return redirect(url_for(".view_collection", cid=cid))
+
+@bp.route("/add-to-collections/<int:song_id>", methods=["GET", "POST"])
+@login_required
+def add_track_view(song_id):
+    collections = dao.view_collections(current_user.id)
+
+    return render_template("search/add_to_collection.html", collections=collections, song_id=song_id)
+
+@bp.route("/add/<int:cid>/<int:song_id>", methods=["POST"])
+@login_required
+def add_track_to_collection(cid: int, song_id: int):
+    dao.add_song_to_collection(cid, song_id)
+    return redirect(url_for("search.search_songs"))
 
 @bp.route("/remove/album/<int:cid>/", methods=["POST"])
 @login_required

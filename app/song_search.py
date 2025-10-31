@@ -108,7 +108,7 @@ def search_songs():
                         curs.execute(
                             'SELECT COUNT(*) '
                             'FROM "listentosong" '
-                            f'WHERE username = \'{user}\' AND song_id = {song[0]}',
+                            f'WHERE song_id = {song[0]}',
                             []
                         )
 

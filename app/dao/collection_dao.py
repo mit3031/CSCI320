@@ -127,23 +127,20 @@ def get_collection_tracks(username: str, collection_id: int) -> list:
 
     return results
 
+def get_albums(search_term):
+    search = f"%{search_term}%"
+    sql = """
+        SELECT album_id, name, release_date
+        FROM album
+        WHERE name LIKE %s;
     """
-    collections = [{
-        "cid": r[0],
-        "collection_name": r[1],
-        "song_id": r[2],
-        "song": r[3],
-        "artist_id": r[4],
-        "artist": r[5],
-        "album_id": r[6],
-        "album": r[7],
-        "length": r[8],
-        "genre": r[9],
-    } for r in rows]
-    print(rows)
 
-    return collections
-    """
+    conn = get_db()
+    with conn.cursor() as cur:
+        cur.execute(sql, (search,))
+        rows = cur.fetchall()
+    
+    return rows
 
 def get_collection_info(collection_id: int):
     sql = """
@@ -209,17 +206,27 @@ def remove_album_from_collection(collection_id: int, album_name: str):
 
     conn.commit()
 
-def add_album_to_collection(collection_id: int, album_name: str):
+def add_album_to_collection(collection_id: int, album_id: int):
     sql = """
-    INSERT INTO ispartofcollection
-    WHERE collection_id = %s 
-        AND song_id in (
-            SELECT
-        );
+    INSERT INTO ispartofcollection (collection_id, song_id)
+    SELECT %s, ipa.song_id
+    FROM ispartofalbum ipa
+    WHERE ipa.album_id = %s;
+    """
+    conn = get_db()
+    with conn.cursor() as cur:
+        cur.execute(sql, (collection_id, album_id))
+
+    conn.commit()
+
+def add_song_to_collection(collection_id: int, song_id: int):
+    sql = """
+    INSERT INTO ispartofcollection (collection_id, song_id)
+    VALUES (%s, %s)
     """
 
     conn = get_db()
     with conn.cursor() as cur:
-        cur.execute(sql, (collection_id, album_name))
+        cur.execute(sql, (collection_id, song_id))
 
     conn.commit()
