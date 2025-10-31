@@ -93,12 +93,10 @@ def search_songs():
 
                 # Organize search results
                 for song in songs:
-                    print(songs)
                     # check if the song is not already in results
                     if song[0] not in song_ids:
                         # Not in results - add it
 
-                        print(f"Counting times {user} listened to song id {song[0]}")
                         # Get times listened to song
                         curs.execute(
                             'SELECT COUNT(*)' \
@@ -116,8 +114,13 @@ def search_songs():
                             "listened": curs.fetchone()[0]})
                         song_ids.append(song[0])
                     else:
-                        # In results - add the artist to song information
-                        results[results.index(song[0])]['artist'] += ", " + song[2]
+                        toCheck = results[song_ids.index(song[0])]
+                        # In results - add the artist to song information if not already there
+                        if song[2] not in toCheck['artist']:
+                            results[song_ids.index(song[0])]['artist'] += ", " + song[2]
+                        # Do the same for album
+                        if song[3] not in toCheck['album']:
+                            results[song_ids.index(song[0])]['album'] += ", " + song[3]
             
                 db_conn.commit()
         except psycopg.Error as e:
