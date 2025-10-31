@@ -1,27 +1,43 @@
-<!-- 
-Form to search for songs
-Author: Joseph Britton (jtb8595)
--->
-
-{% extends 'base.html' %}
-
-{% block header %}
-<h1>{% block title %}Song Search{% endblock %}</h1>
-{% endblock %}
+{% extends "base.html" %}
+{% block title %}Song Search{% endblock %}
 
 {% block content %}
-<form method="post" action="{{ url_for('search.search_songs') }}">
-    <label for="search">Search Term</label>
-    <input name="search" id="search">
+<div style="max-width: 700px; margin: 50px auto; padding: 25px; border-radius: 12px; background-color: #f9f9f9; box-shadow: 0 6px 12px rgba(0,0,0,0.08);">
+    <h2 style="text-align: center; margin-bottom: 25px; font-weight: 700;">Song Search</h2>
 
-    <label for="search_by">Search in</label>
-    <select name="search_by" id="search_by">
-        <option value="name">Song name</option>
-        <option value="artist">Artist name</option>
-        <option value="album">Album name</option>
-        <option value="genre">Genre name</option>
-    </select>
+    <form action="{{ url_for('search.search_songs') }}" method="POST" style="display: flex; flex-direction: column; gap: 18px;">
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; align-items: flex-end;">
+            
+            <!-- Search by Dropdown -->
+            <div style="flex: 1; min-width: 150px;">
+                <label for="search_by" style="font-weight: 500;">Search by</label>
+                <select name="search_by" id="search_by" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+                    <option value="name">Song Name</option>
+                    <option value="artist">Artist</option>
+                    <option value="album">Album</option>
+                    <option value="genre">Genre</option>
+                </select>
+            </div>
 
-    <input type="submit" value="Search">
-</form>
+            <!-- Search Term -->
+            <div style="flex: 2; min-width: 250px;">
+                <label for="search" style="font-weight: 500;">Search Term</label>
+                <input type="text" name="search" id="search" placeholder="Type a keyword..." required
+                       style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+            </div>
+
+            <!-- Buttons -->
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" style="padding: 10px 18px; border-radius: 8px; border: none; background-color: #007BFF; color: white; font-weight: 500; cursor: pointer; transition: background-color 0.2s;">Search</button>
+                <a href="{{ url_for('search.search_songs') }}" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #6c757d; color: #6c757d; font-weight: 500; text-decoration: none; text-align: center; cursor: pointer; transition: background-color 0.2s;">Reset</a>
+            </div>
+
+        </div>
+    </form>
+
+    <div style="text-align: center; margin-top: 25px;">
+        <a href="#" style="padding: 10px 20px; border-radius: 50px; border: 1px solid #343a40; color: #343a40; text-decoration: none; cursor: not-allowed;">← Back to Home</a>
+        <!-- Placeholder MUST CONNECT TO HOME PAGE AFTER MERGE -->
+    </div>
+</div>
 {% endblock %}
