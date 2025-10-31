@@ -4,9 +4,6 @@ from .dao import collection_dao as dao
 
 bp = Blueprint("collections", __name__, url_prefix="/collections")
 
-#check headers later
-#Needs edit for total duration in minuites
-
 @bp.route("/", methods=["GET"])
 @login_required
 def collections_home():
@@ -30,10 +27,17 @@ def create_collection():
 
     return redirect(url_for(".collections_home"))
 
+@bp.route("/modify/<int:cid>", methods=["GET", "POST"])
+@login_required
+def modify_collection(cid: int):
+    print(request.method)
+    print("hi")
+    return render_template("collections/modify.html")
+
 @bp.route("/<int:cid>", methods=["GET", "POST"])
 @login_required
 def view_collection(cid):
-    tracks = dao.get_collection_tracks(cid)
+    tracks = dao.get_collection_tracks(current_user.id, cid)
     return render_template("collections/view.html", tracks=tracks)
 
 @bp.route("/remove/<int:cid>/<int:song_id>", methods=["POST"])
