@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: auto; padding: 25px; border: 1px solid #ddd; border-radius: 12px; background-color: #f9f9f9; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+    <div>
+        <div>
+            <h3>{{ tracks[0]['collection_name'] }}</h3>
+            <form method="POST" action="{{ url_for('play.play_collection', cid=tracks[0]['cid']) }}">
+                <input type="hidden" name="next" value="{{ request.full_path }}">
+                <input type="submit" value="Play Collection">
+            </form>
+        </div>
+        <div>
+            <form method="POST" action="{{ url_for('.rename_collection', cid=tracks[0]['cid']) }}">
+                <label>Rename Collection</label>
+                <input id="collection-rename" name="collection-rename" placeholder="Rename collection to..." required>
+                <input type="submit" value="Rename">
+            </form>
+            <form method="POST" action="{{ url_for('.delete_album_from_collection', cid=tracks[0]['cid']) }}">
+                <label>Delete Album</label>
+                <input id="delete-album-col" name="delete-album-col" placeholder="Type an album" required>
+                <input type="submit" value="Delete">
+            </form>
+        </div>
+    </div>
+    {% for track in tracks %}
+    <hr style="margin: 20px 0; border-color: #ccc;">
+    <h5>Track {{ loop.index }}
+    <h5>{{ track['song'] }}</h5>
+    <h5>{{ track['artist'] }}</h5>
+    <h5>{{ track['album'] }}</h5>
+    <h5>{{ track['length'] }} seconds</h5>
+    <h5>{{ track['genre'] }}</h5>
+    <form method="POST" action="{{ url_for('play.play_song', song_id=track['song_id']) }}">
+        <input type="hidden" name="next" value="{{ request.full_path }}">
+        <button type="submit">Play</button>
+    </form>
+    <form method="POST" action="{{ url_for('.delete_track_from_collection', cid=track['cid'], song_id=track['song_id'])}}">
+        <button type="submit">Delete</button>
+    </form>
+    {% endfor %}
+</div>
+{% endblock %}

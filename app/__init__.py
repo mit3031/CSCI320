@@ -37,6 +37,8 @@ def create_app(test_config=None):
     from . import auth
     from . import profile
     from . import home
+    from . import collections
+    from . import play
 
     try:
         db.init_db(app)
@@ -49,6 +51,8 @@ def create_app(test_config=None):
     app.register_blueprint(auth.bp)
     app.register_blueprint(profile.bp)
     app.register_blueprint(home.bp)
+    app.register_blueprint(collections.bp)
+    app.register_blueprint(play.bp)
 
     app.add_url_rule("/", endpoint="index")
 
