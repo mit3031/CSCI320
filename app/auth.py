@@ -63,7 +63,7 @@ def register():
                 if curs.fetchone():
                     return "Username already exists. Please choose another one.", 400
 
-                secure_pw = hash_password(password) #hashing the password
+                #secure_pw = hash_password(password) #hashing the password
                 print("After hashing:", time.time() - start)
 
                 curs.execute( #inserts the values inputed into the field into the user table
@@ -71,7 +71,7 @@ def register():
                     INSERT INTO "user" (username, password, email, first_name, last_name, last_login, date_created)
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
                     ''',
-                    (username, secure_pw, email, first_name, last_name, None, curr_time) #None represents the last_login since this is registration
+                    (username, password, email, first_name, last_name, None, curr_time) #None represents the last_login since this is registration
                 )
                 print("After insert:", time.time() - start)
             # figure out login & sessions
@@ -126,7 +126,7 @@ def login():
                 db_username, db_password_hash = user_data
 
                 # Verify  password
-                if not verify_password(password, db_password_hash):
+                if password != db_password_hash: #changed to make direct comparison now that passwords are unhashed
                     flash("Incorrect password.")
                     return render_template("auth/login.html")
 
