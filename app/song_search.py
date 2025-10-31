@@ -23,44 +23,44 @@ bp = Blueprint("search", __name__, url_prefix="/search")
 @bp.route("/search", methods=["GET", "POST"])
 @login_required
 def search_songs():
-    if request.methon == "POST":
+    if request.method == "POST":
         search_term = request.form["search"].strip() # Whatever's in the search bar
         search_by = request.form["search_by"].strip()
-        
+        user = current_user.id
     
         db_conn = get_db()
         try:
-            with db_conn.cursor as curs:
+            with db_conn.cursor() as curs:
                 if search_by == "name":
                     curs.execute(
-                        'SELECT s.name, ar.name, al.name, s.length, COUNT(l.datetime_listened), s.song_id ' \
+                        'SELECT s.title, ar.name, al.name, s.length, COUNT(l.datetime_listened), s.song_id ' \
                         'FROM "song" AS s ' \
                         'INNER JOIN "makesong" AS m ON s.song_id = m.song_id ' \
                         'INNER JOIN "artist" AS ar ON ar.artist_id = m.artist_id' \
                         'INNER JOIN "ispartofalbum" AS i ON s.song_id = i.song_id ' \
                         'INNER JOIN "album" AS al ON al.album_id = i.album_id ' \
                         'INNER JOIN "listentosong" AS l ON l.song_id = s.song_id ' \
-                        'WHERE s.name = "%%%s%%", l.username = "%s"' \
-                        'ORDER BY s.name ASC, ar.name ASC',
-                        (search_term, current_user)
+                        'WHERE s.title = "%%%s$$", l.username = "%s"' \
+                        'ORDER BY s.title ASC, ar.name ASC',
+                        (search_term, user)
                     )
 
                 elif search_by == "artist":
                     curs.execute(
-                        'SELECT s.name, ar.name, al.name, s.length, COUNT(l.datetime_listened), s.song_id ' \
+                        'SELECT s.title, ar.name, al.name, s.length, COUNT(l.datetime_listened), s.song_id ' \
                         'FROM "song" AS s ' \
                         'INNER JOIN "makesong" AS m ON s.song_id = m.song_id ' \
                         'INNER JOIN "artist" AS ar ON ar.artist_id = m.artist_id' \
                         'INNER JOIN "ispartofalbum" AS al ON al.song_id = s.song_id ' \
                         'INNER JOIN "listentosong" AS l ON l.song_id = s.song_id ' \
                         'WHERE ar.name = "%%%s%%", l.username = "%s"' \
-                        'ORDER BY s.name ASC, ar.name ASC',
-                        (search_term, current_user)
+                        'ORDER BY s.title ASC, ar.name ASC',
+                        (search_term, user)
                     )
             
                 elif search_by == "album":
                     curs.execute(
-                        'SELECT s.name, ar.name, al.name, s.length, COUNT(l.datetime_listened), s.song_id ' \
+                        'SELECT s.title, ar.name, al.name, s.length, COUNT(l.datetime_listened), s.song_id ' \
                         'FROM "album" AS al'
                         'INNER JOIN "ispartofalbum" AS i ON i.album_id = al.album_id '
                         'INNER JOIN "song" AS s ON s.song_id = i.song_id '
@@ -68,13 +68,13 @@ def search_songs():
                         'INNER JOIN "artist" AS ar ON ar.artist_id = m.artist_id ' \
                         'INNER JOIN "listentosong" AS l ON l.song_id = s.song_id ' \
                         'WHERE al.name = "%%%s%%", l.username = "%s" ' \
-                        'ORDER BY s.name ASC, ar.name ASC',
-                        (search_term, current_user)
+                        'ORDER BY s.title ASC, ar.name ASC',
+                        (search_term, user)
                     )
 
                 elif search_by == "genre":
                     curs.execute(
-                        'SELECT s.name, ar.name, al.name, s.length, COUNT(l.datetime_listened), s.song_id ' \
+                        'SELECT s.title, ar.name, al.name, s.length, COUNT(l.datetime_listened), s.song_id ' \
                         'FROM "genre" AS g'
                         'INNER JOIN "songhasgenre" AS h ON h.genre_id = g.genre_id '
                         'INNER JOIN "song" AS s ON s.song_id = h.song_id '
@@ -84,24 +84,29 @@ def search_songs():
                         'INNER JOIN "album" AS al ON i.album_id = al.album_id ' \
                         'INNER JOIN "listentosong" AS l ON l.song_id = s.song_id ' \
                         'WHERE g.name = "%%%s%%", l.username = "%s" ' \
-                        'ORDER BY s.name ASC, ar.name ASC',
-                        (search_term, current_user)
+                        'ORDER BY s.title ASC, ar.name ASC',
+                        (search_term, user)
                     )
                 
                 # songs[x] = [song name, artist, album, song length, times listened, song_id]
                 songs = curs.fetchall()
-                song_ids, search_results = {}
+                song_ids, results = {}
 
                 # Organize search results
                 for song in songs:
                     # check if the song is not already in results
                     if song[5] not in song_ids:
                         # Not in results - add it
-                        search_results.append([song[0], song[1], song[2], song[3], song[4]])
+                        results.append({
+                            "name": song[0], 
+                            "artist": song[1], 
+                            "album": song[2], 
+                            "length": song[3], 
+                            "listened": song[4]})
                         song_ids.append(song[5])
                     else:
                         # In results - add the artist
-                        search_results[search_results.index(song[5])][1] += ", " + song[1]
+                        results[results.index(song[5])]['artist'] += ", " + song[1]
             
                 db_conn.commit()
         except psycopg.Error as e:
@@ -109,4 +114,6 @@ def search_songs():
             flash(f"Database error: {e}")
             return f"Database error: {e}", 500
     
-    return render_template("search/results.html", results=search_results)
+        return render_template("search/results.html", results=results)
+
+    return render_template("search/search.html")
