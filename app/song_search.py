@@ -40,7 +40,7 @@ def search_songs():
                         'INNER JOIN "ispartofalbum" AS i ON s.song_id = i.song_id ' \
                         'INNER JOIN "album" AS al ON al.album_id = i.album_id ' \
                         'INNER JOIN "listentosong" AS l ON l.song_id = s.song_id ' \
-                        'WHERE s.title = "%%%s$$", l.username = "%s"' \
+                        'WHERE s.title = "%%%s%%", l.username = "%s"' \
                         'ORDER BY s.title ASC, ar.name ASC',
                         (search_term, user)
                     )
