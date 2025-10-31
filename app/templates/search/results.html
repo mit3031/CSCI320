@@ -9,6 +9,7 @@ Author: Joseph Britton (jtb8595)
 <h1>{% block title %}Song Search Results{% endblock %}</h1>
 {% endblock %}
 
+{% block content %}
 {% for result in results %}
     <h3>{{ result['name'] }}</h3>
     <h5>By {{ result['artist'] }}</h5>

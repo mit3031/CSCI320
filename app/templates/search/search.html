@@ -10,9 +10,9 @@ Author: Joseph Britton (jtb8595)
 {% endblock %}
 
 {% block content %}
-<form method="post">
+<form method="post" action="{{ url_for('search.search_songs') }}">
     <label for="search">Search Term</label>
-    <input name="search" id="search" required>
+    <input name="search" id="search">
 
     <label for="search_by">Search in</label>
     <select name="search_by" id="search_by">
