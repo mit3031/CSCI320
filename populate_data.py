@@ -45,27 +45,39 @@ def get_con():
 def rand_date(start_year=2020, end_year=2025):
     start = datetime(start_year, 1, 1)
     end = datetime(end_year, 12, 31)
-    return fake.date_between_dates(start_date=start, end_date = end)
+    return fake.date_between_dates(start, end)
 
 def rand_timestamp(start_year=2020, end_year=2025):
     start = datetime(start_year, 1, 1)
     end = datetime(end_year, 12, 31)
-    return fake.date_time_between_dates(datetime_start=start, datetime_end=end)
+    return fake.date_time_between_dates(start, end)
 
 def populate_users(con, n=6000):
     cur = con.cursor()
-    users = set()
+    cur.execute('SELECT username FROM "user"')
+    users = set(row[0] for row in cur.fetchall())
+    cur.execute('SELECT email FROM "user"')
+    emails = set(row[0] for row in cur.fetchall())
     for _ in range(n):
         while True:
             base_username = fake.user_name().replace('.', '').replace('_', '').replace('-', '')
+            base_username = base_username[:15]
             username = base_username + str(random.randint(0, 9999))
             if username not in users:
                 users.add(username)
                 break
+        while True:
+            email = fake.email()
+            if email not in emails:
+                emails.add(email)
+                break
         password = fake.password(length=20)
-        email = fake.email()
         first_name = fake.first_name()
+        while len(first_name) > 20:
+            first_name = fake.first_name()
         last_name = fake.last_name()
+        while len(last_name) > 20:
+            last_name = fake.last_name()
         date_created = rand_timestamp(2019, 2025)
         last_login = fake.date_time_between_dates(datetime_start=date_created, datetime_end=datetime(2025, 12, 31))
         cur.execute("""
@@ -76,7 +88,8 @@ def populate_users(con, n=6000):
 
 def populate_artists(con, n=3000):
     cur = con.cursor()
-    artists = set()
+    cur.execute("SELECT name FROM artist")
+    artists = set(row[0] for row in cur.fetchall())
     for _ in range(n):
         while True:
             name = fake.name()
@@ -86,10 +99,10 @@ def populate_artists(con, n=3000):
         cur.execute("INSERT INTO artist(name) VALUES (%s)", (name,))
     con.commit()
 
-def populate_genres(con, n=30):
+def populate_genres(con, n=20):
     cur = con.cursor()
     cur.execute("SELECT name FROM genre")
-    existing_genres = set(row[0].lower() for row in cur.fetchall())
+    existing_genres = set(row[0] for row in cur.fetchall())
     base_genres = ['Rock', 'Pop', 'Jazz', 'Hip Hop', 'Electronic', 'Country', 'R&B', 'Classical', 
                 'Metal', 'Indie', 'Folk', 'Blues', 'Reggae', 'Latin', 'Punk', 'Soul', 'Alternative', 
                 'Gospel', 'Funk', 'House', 'Techno', 'Disco', 'Ambient', 'Wave', 'Step', 'Bass', 'Tech']
@@ -102,7 +115,9 @@ def populate_genres(con, n=30):
         pool.append(base)
     for modifier in modifiers:
         for base in base_genres:
-            pool.append(modifier + base)
+            genre_name = modifier + base
+            if len(genre_name) <= 20:
+                pool.append(genre_name)
 
     avail_genres = [g for g in pool if g.lower() not in existing_genres]
 
@@ -114,39 +129,42 @@ def populate_genres(con, n=30):
 
     con.commit()
 
-def populate_songs(con, n=10000):
+def populate_songs(con, n=7000):
     cur = con.cursor()
     title_words = ['Love', 'Heart', 'Night', 'Dream', 'Fire', 'Rain', 'Blue', 'Summer', 'Winter', 
                 'Dance', 'Soul', 'Light', 'Dark', 'Moon', 'Star', 'Sun', 'Wild', 'Sweet', 
                 'Paradise', 'Heaven', 'Angel', 'Devil', 'Thunder', 'Lightning', 'Storm', 
                 'Ocean', 'River', 'Mountain', 'Sky', 'Midnight', 'Morning', 'Yesterday', 
                 'Tomorrow', 'Forever', 'Never', 'Always', 'Magic', 'Mystery', 'Freedom']
+    
     titles = set()
-    inserted = 0
-    while inserted < n:
+    while len(titles) < n:
         if random.random() < 0.5:
             title = random.choice(title_words) + ' ' + random.choice(title_words)
         else:
             title = random.choice(title_words) + ' ' + random.choice(['in', 'on', 'of', 'for']) + ' ' + random.choice(title_words)
-        
-        if title not in titles:
-            titles.add(title)
-            release_date = rand_date()
-            length = random.randint(60, 600)
-            is_explicit = random.choice([True, False])
-            cur.execute("""
-                INSERT INTO song(title, release_date, length, is_explicit)
-                VALUES (%s, %s, %s, %s)
-            """, (title, release_date, length, is_explicit))
-            inserted += 1
+        titles.add(title)
+    
+    data = []
+    for title in titles:
+        release_date = rand_date()
+        length = random.randint(60, 600)
+        is_explicit = random.choice([True, False])
+        data.append((title, release_date, length, is_explicit))
+    
+    cur.executemany("""
+        INSERT INTO song(title, release_date, length, is_explicit)
+        VALUES (%s, %s, %s, %s)
+    """, data)
     con.commit()
 
 def populate_albums(con, n=2000):
     cur = con.cursor()
-    albums = set()
+    cur.execute("SELECT name FROM album")
+    albums = set(row[0] for row in cur.fetchall())
     inserted = 0
     while inserted < n:
-        name = fake.sentence(nb_words=2)
+        name = fake.sentence(nb_words=2).replace('.', '')
         if name not in albums:
             albums.add(name)
             release_date = rand_date()
@@ -164,115 +182,210 @@ def populate_collections(con, n=2000):
         cur.execute("INSERT INTO collection(name, creator_username) VALUES (%s, %s)", (name, creator))
     con.commit()
 
-def populate_follow_users(con):
+def populate_albums(con, n=2000):
+    cur = con.cursor()
+    cur.execute("SELECT name FROM album")
+    existing = set(row[0] for row in cur.fetchall())
+    
+    albums = set()
+    while len(albums) < n:
+        name = fake.sentence(nb_words=2).replace('.', '')
+        if name not in existing:
+            albums.add(name)
+    
+    data = [(name, rand_date()) for name in albums]
+    cur.executemany("INSERT INTO album(name, release_date) VALUES (%s, %s)", data)
+    con.commit()
+
+def populate_collections(con, n=2000):
     cur = con.cursor()
     cur.execute("SELECT username FROM \"user\"")
     users = [row[0] for row in cur.fetchall()]
+    
+    data = [(fake.sentence(nb_words=2), random.choice(users)) for _ in range(n)]
+    cur.executemany("INSERT INTO collection(name, creator_username) VALUES (%s, %s)", data)
+    con.commit()
+
+def populate_follow_users(con, n=5000):
+    cur = con.cursor()
+    cur.execute("SELECT username FROM \"user\"")
+    users = [row[0] for row in cur.fetchall()]
+    
+    data = []
     for follower in users:
         follows = random.sample([user for user in users if user != follower], k=random.randint(1, 5))
         for followed in follows:
-            cur.execute("INSERT INTO followuser(follower_username, followed_username) VALUES (%s, %s)", (follower, followed))
+            if len(data) >= n:
+                break
+            data.append((follower, followed))
+        if len(data) >= n:
+            break
+
+    cur.executemany("INSERT INTO followuser(follow_username, followed_username) VALUES (%s, %s)", data)
     con.commit()
 
-def populate_make_song(con):
+def populate_make_song(con, n=5000):
     cur = con.cursor()
-    cur.execute("SELECT id FROM artist")
+    cur.execute("SELECT artist_id FROM artist")
     artists = [row[0] for row in cur.fetchall()]
-    cur.execute("SELECT id FROM song")
+    cur.execute("SELECT song_id FROM song")
     songs = [row[0] for row in cur.fetchall()]
+    
+    data = []
     for song_id in songs:
         selected_artists = random.sample(artists, k=random.randint(1,3))
         for artist_id in selected_artists:
-            cur.execute("INSERT INTO makesong(artist_id, song_id) VALUES (%s, %s)", (artist_id, song_id))
+            if len(data) >= n:
+                break
+            data.append((artist_id, song_id))
+        if len(data) >= n:
+            break
+    
+    cur.executemany("INSERT INTO makesong(artist_id, song_id) VALUES (%s, %s)", data)
     con.commit()
 
-def populate_make_album(con):
+def populate_make_album(con, n=5000):
     cur = con.cursor()
-    cur.execute("SELECT id FROM artist")
+    cur.execute("SELECT artist_id FROM artist")
     artists = [row[0] for row in cur.fetchall()]
-    cur.execute("SELECT id FROM album")
+    cur.execute("SELECT album_id FROM album")
     albums = [row[0] for row in cur.fetchall()]
+    
+    data = []
     for album_id in albums:
         selected_artists = random.sample(artists, k=random.randint(1,2))
         for artist_id in selected_artists:
-            cur.execute("INSERT INTO makealbum(artist_id, album_id) VALUES (%s, %s)", (artist_id, album_id))
+            if len(data) >= n:
+                break
+            data.append((artist_id, album_id))
+        if len(data) >= n:
+            break
+    
+    cur.executemany("INSERT INTO makealbum(artist_id, album_id) VALUES (%s, %s)", data)
     con.commit()
 
-def populate_is_part_of_album(con):
+def populate_is_part_of_album(con, n=5000):
     cur = con.cursor()
-    cur.execute("SELECT id FROM song")
+    cur.execute("SELECT song_id FROM song")
     songs = [row[0] for row in cur.fetchall()]
-    cur.execute("SELECT id FROM album")
+    cur.execute("SELECT album_id FROM album")
     albums = [row[0] for row in cur.fetchall()]
+    
+    data = []
     for album_id in albums:
         album_songs = random.sample(songs, k=random.randint(3,8))
         for track_num, song_id in enumerate(album_songs, start=1):
-            cur.execute("INSERT INTO ispartofalbum(song_id, album_id, track_num) VALUES (%s, %s, %s)", (song_id, album_id, track_num))
+            if len(data) >= n:
+                break
+            data.append((song_id, album_id, track_num))
+        if len(data) >= n:
+            break
+    
+    cur.executemany("INSERT INTO ispartofalbum(song_id, album_id, track_num) VALUES (%s, %s, %s)", data)
     con.commit()
 
-def populate_song_has_genre(con):
+def populate_song_has_genre(con, n=5000):
     cur = con.cursor()
-    cur.execute("SELECT id FROM song")
+    cur.execute("SELECT song_id FROM song")
     songs = [row[0] for row in cur.fetchall()]
-    cur.execute("SELECT id FROM genre")
+    cur.execute("SELECT genre_id FROM genre")
     genres = [row[0] for row in cur.fetchall()]
+    
+    data = []
     for song_id in songs:
         selected_genres = random.sample(genres, k=random.randint(1,3))
         for genre_id in selected_genres:
-            cur.execute("INSERT INTO songhasgenre(song_id, genre_id) VALUES (%s, %s)", (song_id, genre_id))
+            if len(data) >= n:
+                break
+            data.append((song_id, genre_id))
+        if len(data) >= n:
+            break
+    
+    cur.executemany("INSERT INTO songhasgenre(song_id, genre_id) VALUES (%s, %s)", data)
     con.commit()
 
-def populate_album_has_genre(con):
+def populate_album_has_genre(con, n=5000):
     cur = con.cursor()
-    cur.execute("SELECT id FROM album")
+    cur.execute("SELECT album_id FROM album")
     albums = [row[0] for row in cur.fetchall()]
-    cur.execute("SELECT id FROM genre")
+    cur.execute("SELECT genre_id FROM genre")
     genres = [row[0] for row in cur.fetchall()]
+    
+    data = []
     for album_id in albums:
         selected_genres = random.sample(genres, k=random.randint(1,2))
         for genre_id in selected_genres:
-            cur.execute("INSERT INTO albumhasgenre(album_id, genre_id) VALUES (%s, %s)", (album_id, genre_id))
+            if len(data) >= n:
+                break
+            data.append((album_id, genre_id))
+        if len(data) >= n:
+            break
+    
+    cur.executemany("""INSERT INTO albumhasgenre(album_id, genre_id) VALUES (%s, %s)  ON CONFLICT DO NOTHING;""", data)
     con.commit()
 
-def populate_is_part_of_collection(con):
+def populate_is_part_of_collection(con, n=5000):
     cur = con.cursor()
-    cur.execute("SELECT id FROM collection")
+    cur.execute("SELECT collection_id FROM collection")
     collections = [row[0] for row in cur.fetchall()]
-    cur.execute("SELECT id FROM song")
+    cur.execute("SELECT song_id FROM song")
     songs = [row[0] for row in cur.fetchall()]
+    
+    data = []
     for collection_id in collections:
         selected_songs = random.sample(songs, k=random.randint(5,20))
         for song_id in selected_songs:
-            cur.execute("INSERT INTO ispartofcollection(collection_id, song_id) VALUES (%s, %s)", (collection_id, song_id))
+            if len(data) >= n:
+                break
+            data.append((collection_id, song_id))
+        if len(data) >= n:
+            break
+    
+    cur.executemany("INSERT INTO ispartofcollection(collection_id, song_id) VALUES (%s, %s)", data)
     con.commit()
 
-def populate_listen_to_song(con):
+def populate_listen_to_song(con, n=5000):
     cur = con.cursor()
     cur.execute("SELECT username FROM \"user\"")
     users = [row[0] for row in cur.fetchall()]
-    cur.execute("SELECT id FROM song")
+    cur.execute("SELECT song_id FROM song")
     songs = [row[0] for row in cur.fetchall()]
+    
+    data = []
     for username in users:
         listened_songs = random.sample(songs, k=random.randint(5,15))
         for song_id in listened_songs:
-            listened_at = rand_timestamp()
-            cur.execute("INSERT INTO listentosong(username, song_id, datetime_listened) VALUES (%s, %s, %s)", (username, song_id, listened_at))
+            if len(data) >= n:
+                break
+            data.append((username, song_id, rand_timestamp()))
+        if len(data) >= n:
+            break
+    
+    cur.executemany("INSERT INTO listentosong(username, song_id, datetime_listened) VALUES (%s, %s, %s)", data)
     con.commit()
 
-def populate_song_rating(con):
+def populate_song_rating(con, n=5000):
     cur = con.cursor()
     cur.execute("SELECT username FROM \"user\"")
     users = [row[0] for row in cur.fetchall()]
-    cur.execute("SELECT id FROM song")
+    cur.execute("SELECT song_id FROM song")
     songs = [row[0] for row in cur.fetchall()]
+    
+    data = []
     for username in users:
         rated_songs = random.sample(songs, k=random.randint(3,10))
         for song_id in rated_songs:
+            if len(data) >= n:
+                break
             rating = random.randint(1, 5)
-            cur.execute("INSERT INTO songrating(username, song_id, rating) VALUES (%s, %s, %s)", (username, song_id, rating))
+            liked = rating >= 3
+            data.append((username, song_id, liked, rating))
+        if len(data) >= n:
+            break
+    
+    cur.executemany("INSERT INTO songrating(username, song_id, liked, rating) VALUES (%s, %s, %s, %s)", data)
     con.commit()
 
-# --- Main Execution ---
 def main():
     try:
         start_ssh()
@@ -284,7 +397,6 @@ def main():
         populate_songs(con)
         populate_albums(con)
         populate_collections(con)
-        
         populate_follow_users(con)
         populate_make_song(con)
         populate_make_album(con)
