@@ -2,10 +2,10 @@ from flask import Blueprint, redirect, render_template, request, jsonify, abort,
 from flask_login import login_required, current_user
 from .dao import collection_dao as dao
 
-bp = Blueprint("collections", __name__, url_prefix="/collections")
+#Backend for storing data in a collection
+#Author: Shupruvo Skider, Sean Allen
 
-#check headers later
-#Needs edit for total duration in minuites
+bp = Blueprint("collections", __name__, url_prefix="/collections")
 
 @bp.route("/", methods=["GET"])
 @login_required
