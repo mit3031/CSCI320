@@ -64,7 +64,6 @@
                             <button type="submit" style="padding: 6px 10px; border-radius: 50px; border: none; background-color: #28a745; color: white; font-weight: 500; cursor: pointer;">▶ Play</button>
                         </form>
                         <form action="{{ url_for('collections.add_track_view', song_id=song['song_id']) }}" method="POST"> <!-- Placeholder button -->
-                            <input type="hidden" name="song_id" value="{{ song['song_id'] }}">
                             <button type="submit" style="padding: 6px 10px; border-radius: 50px; border: 1px solid #007BFF; background-color: white; color: #007BFF; font-weight: 500; cursor: pointer;">Add To Collections</button>
                         </form>
                     </td>

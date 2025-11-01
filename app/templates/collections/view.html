@@ -2,7 +2,7 @@
 
 {% block content %}
 <div style="max-width: 600px; margin: auto; padding: 25px; border: 1px solid #ddd; border-radius: 12px; background-color: #f9f9f9; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
-    {% if tracks|length == 0 %}
+    {% if tracks|length != 0 %}
         <div>
             <div>
                 <h3>{{ tracks[0]['collection_name'] }}</h3>

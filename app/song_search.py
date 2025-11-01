@@ -242,7 +242,6 @@ listening event in the listentosong table with the datetime and username
 @login_required
 def play_song(song_id: int):
     curr_time = datetime.datetime.now()
-    next_url = request.form.get("next")  
 
     db_conn = get_db()
     try:
@@ -259,6 +258,4 @@ def play_song(song_id: int):
         return redirect(url_for("search.search_songs"))
 
     # Redirect back to previous page if provided
-    if next_url:
-        return redirect(next_url)
     return redirect(url_for("search.search_songs"))

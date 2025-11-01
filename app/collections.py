@@ -31,6 +31,8 @@ def create_collection():
 @login_required
 def view_collection(cid):
     tracks = dao.get_collection_tracks(current_user.id, cid)
+    print('hi')
+    print(tracks)
     return render_template("collections/view.html", cid=cid, tracks=tracks)
 
 @bp.route("/add-albums/<int:cid>", methods=["GET", "POST"])
