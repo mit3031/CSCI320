@@ -149,6 +149,7 @@ def search_songs():
 """
 Allows users to sort their search results by song name, artist, genre, or year
 Supports both ascending and descending order without retyping the search term
+Author: Marvynn Talusan (mit3031)
 """
 @bp.route("/sort_songs", methods=["POST"])
 @login_required
@@ -237,6 +238,8 @@ def sort_songs():
 """
 Handles song playback. When a user clicks Play, this route logs that
 listening event in the listentosong table with the datetime and username
+Author: Marvynn Talusan (mit3031)
+Author: shu
 """
 @bp.route("/play/<int:song_id>", methods=["POST"]) # Based on Shu's code from play.py
 @login_required

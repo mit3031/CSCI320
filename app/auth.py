@@ -1,3 +1,8 @@
+#
+# Implements the user login and registration features for the program
+# Author: Marvynn Talusan (mit3031)
+#
+
 import psycopg
 import bcrypt
 import datetime
@@ -19,6 +24,7 @@ bp = Blueprint("auth", __name__, url_prefix="/auth")
 """
 This is a routing function for registering new users into the system. It takes in the fields for a user and inserts it into the database
 using an SQL statement
+Author: Marvynn Talusan (mit3031)
 """
 @bp.route("/register", methods=["GET", "POST"])
 def register():
@@ -94,6 +100,7 @@ def register():
 """
 This is a routing function for logging into the system. It takes in two fields, username and password, then checks the databasee if those exists.
 If it does it updates last_login column and creates a session for the user. Redirects them to homepage
+Author: Marvynn Talusan (mit3031)
 """
 @bp.route("/login", methods=["GET", "POST"])
 def login():
@@ -166,6 +173,7 @@ def login():
 """
 This is a routing function for logging out, and when called it will end the user session and redirect them back to the 
 login page of the website.
+Author: Marvynn Talusan (mit3031)
 """
 @bp.route("/logout")
 def logout():

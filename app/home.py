@@ -5,6 +5,7 @@ bp = Blueprint("home", __name__, url_prefix="/")
 
 """
 Simple home route that renders the home page html
+Author: Marvynn Talusan (mit3031)
 """
 @bp.route("/home", methods=["GET"])
 @login_required

@@ -1,3 +1,8 @@
+#
+# Implements the search queries for songs
+# Author: Marvynn Talusan (mit3031)
+#
+
 import psycopg
 import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash
@@ -9,6 +14,7 @@ bp = Blueprint("profile", __name__, url_prefix="/profile")
 """
 Displays the current users profile infomation
 Renders the html page for profile viewing
+Author: Marvynn Talusan (mit3031)
 """
 @bp.route("/", methods=["GET"])
 @login_required
@@ -42,6 +48,7 @@ def view_profile():
 """
 Searches for a user via email in the database
 Directs you to the search.html page (this is where you will be able to follow other users)
+Author: Marvynn Talusan (mit3031)
 """
 @bp.route("/search", methods=["GET", "POST"])
 @login_required
@@ -70,6 +77,7 @@ def search_user():
 """
 Follows a user
 Adds username to the followuser table [follower_username, followed_username]
+Author: Marvynn Talusan (mit3031)
 @Param: Username of the user to be followed
 """
 @bp.route("/follow/<username>", methods=["POST"])
@@ -103,6 +111,7 @@ def follow_user(username):
 """
 Unfollow a user
 Deletes username from the followuser table
+Author: Marvynn Talusan (mit3031)
 """
 @bp.route("/unfollow/<username>", methods=["POST"])
 @login_required
