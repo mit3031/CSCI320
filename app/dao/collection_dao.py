@@ -1,5 +1,8 @@
 from ..db import get_db
 
+# Set of SQL queries and calls for database
+# Author: Sean Allen
+
 # ----- CREATE ---------------------------------------------------------------
 def create_collection(name: str, creator_username: str):
     sql = """
