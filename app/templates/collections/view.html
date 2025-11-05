@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: auto; padding: 25px; border: 1px solid #ddd; border-radius: 12px; background-color: #f9f9f9; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+    {% if tracks|length != 0 %}
+        <div>
+            <div>
+                <h3>{{ tracks[0]['collection_name'] }}</h3>
+                <form method="POST" action="{{ url_for('play.play_collection', cid=cid) }}">
+                    <input type="hidden" name="next" value="{{ request.full_path }}">
+                    <input type="submit" value="Play Collection">
+                </form>
+                <form method="GET" action="{{ url_for('.add_albums_view', cid=cid) }}">
+                    <input type="submit" value="Add Album">
+                </form>
+            </div>
+            <div>
+                <form method="POST" action="{{ url_for('.rename_collection', cid=cid) }}">
+                    <label>Rename Collection</label>
+                    <input id="collection-rename" name="collection-rename" placeholder="Rename collection to..." required>
+                    <input type="submit" value="Rename">
+                </form>
+                <form method="POST" action="{{ url_for('.delete_album_from_collection', cid=cid) }}">
+                    <label>Delete Album</label>
+                    <input id="delete-album-col" name="delete-album-col" placeholder="Type an album" required>
+                    <input type="submit" value="Delete">
+                </form>
+            </div>
+        </div>
+        {% for track in tracks %}
+        <hr style="margin: 20px 0; border-color: #ccc;">
+        <h5>Track {{ loop.index }}
+        <h5>Title: {{ track['song'] }}</h5>
+        <h5>Artist(s): {{ track['artist']|join(", ") }}</h5>
+        <h5>Album(s): {{ track['album']|join(", ") }}</h5>
+        <h5>Length: {{ track['length'] }} seconds</h5>
+        <h5>Genre(s): {{ track['genre']|join(", ") }}</h5>
+        <h5>Times Listened: {{ track['listens'] }}</h5>
+        <form method="POST" action="{{ url_for('play.play_song', song_id=track['song_id']) }}">
+            <input type="hidden" name="next" value="{{ request.full_path }}">
+            <button type="submit">Play</button>
+        </form>
+        <form method="POST" action="{{ url_for('.delete_track_from_collection', cid=cid, song_id=track['song_id'])}}">
+            <button type="submit">Delete</button>
+        </form>
+        {% endfor %}
+    </div>
+    {% else %}
+        <h4>No songs in collection</h4>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,93 @@
+<!-- 
+Page that displays the search results of the user, based on the fields they put in from the Search page
+Displays all the songs realted to that
+Allows to toggle the different sort combinations and displays it accordingly via buttons
+Allows the user to play a song and add it to a collection via buttons
+Author: Marvynn Talusan (mit3031)
+-->
+
+{% extends "base.html" %}
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: 50px auto; padding: 25px; border-radius: 12px; background-color: #f9f9f9; box-shadow: 0 6px 12px rgba(0,0,0,0.08);">
+    <h2 style="text-align: center; margin-bottom: 25px; font-weight: 700;">Search Results</h2>
+
+    <!-- Sort Options -->
+    <form action="{{ url_for('search.sort_songs') }}" method="POST" style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: flex-end; margin-bottom: 25px;">
+        <input type="hidden" name="search_term" value="{{ search_term }}">
+        <input type="hidden" name="search_by" value="{{ search_by }}">
+
+        <div style="flex: 1; min-width: 150px;">
+            <label for="sort_by" style="font-weight: 500;">Sort by:</label>
+            <select name="sort_by" id="sort_by" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+                <option value="song_name">Song Name</option>
+                <option value="artist">Artist</option>
+                <option value="genre">Genre</option>
+                <option value="year">Release Year</option>
+            </select>
+        </div>
+
+        <div style="flex: 1; min-width: 150px;">
+            <label for="direction" style="font-weight: 500;">Order:</label>
+            <select name="direction" id="direction" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+            </select>
+        </div>
+
+        <div style="flex: 0 0 120px;">
+            <button type="submit" style="width: 100%; padding: 10px 0; border-radius: 8px; border: none; background-color: #007BFF; color: white; font-weight: 500; cursor: pointer; transition: background-color 0.2s;">Sort</button>
+        </div>
+    </form>
+
+    <!-- Results Table -->
+    <div style="overflow-x:auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: center;">
+            <thead style="background-color: #007BFF; color: white; font-weight: 600;">
+                <tr>
+                    <th style="padding: 10px; border-radius: 8px 8px 0 0;">Song Name</th>
+                    <th>Artist</th>
+                    <th>Album</th>
+                    <th>Genre</th>
+                    <th>Length</th>
+                    <th>Release Date</th>
+                    <th>Listens</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for song in results %}
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td>{{ song.get('name', '—') }}</td>
+                    <td>{{ song.get('artist', '—') }}</td>
+                    <td>{{ song.get('album', '—') }}</td>
+                    <td>{{ song.get('genre', '—') }}</td>
+                    <td>{{ song.get('length', '—') }}</td>
+                    <td>{{ song.get('release_date', '—') }}</td>
+                    <td>{{ song.get('listened', 0) }}</td>
+                    <td style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+                        <form action="{{ url_for('search.play_song', song_id=song['song_id']) }}" method="POST">
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <button type="submit" style="padding: 6px 10px; border-radius: 50px; border: none; background-color: #28a745; color: white; font-weight: 500; cursor: pointer;">▶ Play</button>
+                        </form>
+                        <form action="{{ url_for('collections.add_track_view', song_id=song['song_id']) }}" method="POST"> <!-- Placeholder button -->
+                            <button type="submit" style="padding: 6px 10px; border-radius: 50px; border: 1px solid #007BFF; background-color: white; color: #007BFF; font-weight: 500; cursor: pointer;">Add To Collections</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" style="padding: 12px; color: #6c757d;">No results found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Navigation -->
+    <div style="text-align: center; margin-top: 25px;">
+        <a href="{{ url_for('search.search_songs') }}" style="padding: 10px 20px; border-radius: 50px; border: 1px solid #343a40; color: #343a40; text-decoration: none;">← Back to Search</a>
+    </div>
+</div>
+{% endblock %}

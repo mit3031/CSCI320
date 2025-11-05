@@ -1,3 +1,8 @@
+#
+# Implements the user login and registration features for the program
+# Author: Marvynn Talusan (mit3031)
+#
+
 import psycopg
 import bcrypt
 import datetime
@@ -16,6 +21,11 @@ def verify_password(password: str, password_hash: str) -> bool:
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
+"""
+This is a routing function for registering new users into the system. It takes in the fields for a user and inserts it into the database
+using an SQL statement
+Author: Marvynn Talusan (mit3031)
+"""
 @bp.route("/register", methods=["GET", "POST"])
 def register():
     print("Entered register route")
@@ -63,7 +73,7 @@ def register():
                 if curs.fetchone():
                     return "Username already exists. Please choose another one.", 400
 
-                secure_pw = hash_password(password) #hashing the password
+                #secure_pw = hash_password(password) #hashing the password
                 print("After hashing:", time.time() - start)
 
                 curs.execute( #inserts the values inputed into the field into the user table
@@ -71,7 +81,7 @@ def register():
                     INSERT INTO "user" (username, password, email, first_name, last_name, last_login, date_created)
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
                     ''',
-                    (username, secure_pw, email, first_name, last_name, None, curr_time) #None represents the last_login since this is registration
+                    (username, password, email, first_name, last_name, None, curr_time) #None represents the last_login since this is registration
                 )
                 print("After insert:", time.time() - start)
             # figure out login & sessions
@@ -87,6 +97,11 @@ def register():
     
     return render_template("auth/register.html")
 
+"""
+This is a routing function for logging into the system. It takes in two fields, username and password, then checks the databasee if those exists.
+If it does it updates last_login column and creates a session for the user. Redirects them to homepage
+Author: Marvynn Talusan (mit3031)
+"""
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     print("Entered login route")
@@ -120,14 +135,14 @@ def login():
                 print(f"DB result: {user_data}") # Shows if the user exists or not
 
                 if not user_data:
-                    flash("Username not found.")
+                    flash("Incorrect Username or Password")
                     return render_template("auth/login.html")
 
                 db_username, db_password_hash = user_data
 
                 # Verify  password
-                if not verify_password(password, db_password_hash):
-                    flash("Incorrect password.")
+                if password != db_password_hash: #changed to make direct comparison now that passwords are unhashed
+                    flash("Incorrect Username or Password")
                     return render_template("auth/login.html")
 
                 # Update last_login 
@@ -145,7 +160,7 @@ def login():
 
                 print(f"User {db_username} successfully logged in.") # We did it
                 flash("Login successful!")
-                return username # this is a place holder for our theoretical homepage (shoudl redirect you to the homepage once it's made)
+                return redirect(url_for("home.index"))
 
         except psycopg.Error as e:
             db_conn.rollback()
@@ -155,6 +170,11 @@ def login():
 
     return render_template("auth/login.html")
 
+"""
+This is a routing function for logging out, and when called it will end the user session and redirect them back to the 
+login page of the website.
+Author: Marvynn Talusan (mit3031)
+"""
 @bp.route("/logout")
 def logout():
     if current_user.is_authenticated:

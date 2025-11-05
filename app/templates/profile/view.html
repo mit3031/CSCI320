@@ -1,0 +1,50 @@
+<!-- 
+Form to view user information and all the people the user follows.
+Also the ability to unfollow them
+Author: Marvynn Talusan (mit3031)
+-->
+{% extends 'base.html' %}
+
+{% block header %}
+<h1 style="text-align: center; margin-bottom: 20px;">Profile</h1>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: auto; padding: 25px; border: 1px solid #ddd; border-radius: 12px; background-color: #f9f9f9; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+
+    <div style="margin-bottom: 25px;">
+        <h3>Welcome, {{ user[2] }} {{ user[3] }} ({{ user[0] }})</h3>
+        <p><strong>Email:</strong> {{ user[1] }}</p>
+        <p><strong>Account Created:</strong> {{ user[4] }}</p>
+        <p><strong>Last Login:</strong> {{ user[5] or "Never" }}</p>
+    </div>
+
+    <hr style="margin: 20px 0; border-color: #ccc;">
+
+    <h3 style="margin-bottom: 15px;">Users You Follow:</h3>
+    {% if following %}
+        <ul style="display: flex; flex-direction: column; gap: 12px; list-style: none; padding-left: 0;">
+            {% for f in following %}
+                <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid #ddd; border-radius: 8px; background-color: #fff;">
+                    <span>{{ f[1] }} {{ f[2] }} ({{ f[0] }})</span>
+                    <form method="post" action="{{ url_for('profile.unfollow_user', username=f[0]) }}" style="margin: 0;">
+                        <button type="submit" style="padding: 8px 14px; border-radius: 8px; border: none; background-color: #dc3545; color: white; font-weight: 500; cursor: pointer; transition: background-color 0.2s;">
+                            Unfollow
+                        </button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You are currently not following anyone yet.</p>
+    {% endif %}
+
+    <hr style="margin: 20px 0; border-color: #ccc;">
+
+    <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+        <a href="{{ url_for('profile.search_user') }}" style="text-decoration: none; color: #007BFF; font-weight: 500;">Search for New Users</a>
+        <a href="{{ url_for('home.index') }}" style="text-decoration: none; color: #007BFF; font-weight: 500;">Back to Home</a>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h1 style="text-align: center; margin-bottom: 20px;">View Collections</h1>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: auto; padding: 25px; border: 1px solid #ddd; border-radius: 12px; background-color: #f9f9f9; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+    <div>
+        <form method="POST" action="{{ url_for('.create_collection') }}">
+            <label>Create New Collection</label>
+            <input id="collection-name" name='name' placeholder="Enter new collection name" required>
+            <input type="submit" value="Create">
+        </form>
+    </div>
+
+    <hr style="margin: 20px 0; border-color: #ccc;">
+
+    <div>
+        <h3>Your Collections</h3>
+        {% if collections %}
+        <ul style="display: flex; flex-direction: column; gap: 12px; list-style: none; padding-left: 0;">
+            {% for playlist in collections %}
+            <li style="display: flex; justify-content: space-between; align-items: center; padding: 5px; border: 1px solid #ddd; border-radius: 8px; background-color: #fff;">
+                <h4>{{ playlist['name'] }} (num tracks: {{ playlist['info'][0] }}) (total length: {{ playlist['info'][1] }} sec)</h4>
+                <form method=""GET action="{{ url_for('.view_collection', cid=playlist['collection_id']) }}">
+                    <button type="submit">View</button>
+                </form>
+                <form method="POST" action="{{ url_for('.delete_collection', cid=playlist['collection_id']) }}">
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <h4>None</h4>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

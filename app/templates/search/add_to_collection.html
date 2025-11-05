@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 800px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 12px; background-color: #f9f9f9; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+    <h2>Add to Collection</h2>
+    {% for col in collections %}
+    <hr style="margin: 20px 0; border-color: #ccc;">
+    <div style="display: flex; flex-direction: row; gap: 12px; list-style: none; padding-left: 0;">
+        <h4>{{ col['name'] }}</h4>
+        <form method="POST" action="{{ url_for('collections.add_track_to_collection', cid=col['collection_id'], song_id=song_id) }}">
+            <button type="submit">Add</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+    

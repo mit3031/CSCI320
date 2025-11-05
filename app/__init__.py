@@ -2,7 +2,7 @@ import os
 import psycopg
 from dotenv import load_dotenv
 from sshtunnel import SSHTunnelForwarder
-from flask import Flask
+from flask import Flask, redirect, url_for
 from .models import User
 from flask_login import LoginManager
 
@@ -30,11 +30,16 @@ def create_app(test_config=None):
         pass
 
     @app.route("/")
-    def hi():
-        return "hi"
+    def index():
+        return redirect(url_for('home.index'))
     
     from . import db
     from . import auth
+    from . import profile
+    from . import home
+    from . import collections
+    from . import play
+    from . import song_search
 
     try:
         db.init_db(app)
@@ -42,9 +47,15 @@ def create_app(test_config=None):
         print(f"DB init failed: {e}")
 
     login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
     print("Login manager initialized")
 
     app.register_blueprint(auth.bp)
+    app.register_blueprint(profile.bp)
+    app.register_blueprint(home.bp)
+    app.register_blueprint(collections.bp)
+    app.register_blueprint(play.bp)
+    app.register_blueprint(song_search.bp)
 
     app.add_url_rule("/", endpoint="index")
 
