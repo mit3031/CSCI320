@@ -1,0 +1,17 @@
+<!--
+Home screen for popularity search
+May be incorporated into other page as time goes on and
+    design vision for Phase 3 features becomes more defined
+Currently very unrefined and serves to test popularity lists as they are implemented
+Author: Joseph Britton (jtb8595)
+-->
+
+{% extends "base.html" %}
+{% block title %}Popular Songs{% endblock %}
+
+{% block content %}
+<form action="{{ url_for('popular.followed_popular') }}" method="POST">
+    <button type="submit">Followed Popular</button>
+</form>
+
+{% endblock %}

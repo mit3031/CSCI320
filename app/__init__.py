@@ -40,6 +40,7 @@ def create_app(test_config=None):
     from . import collections
     from . import play
     from . import song_search
+    from . import popular
 
     try:
         db.init_db(app)
@@ -56,6 +57,7 @@ def create_app(test_config=None):
     app.register_blueprint(collections.bp)
     app.register_blueprint(play.bp)
     app.register_blueprint(song_search.bp)
+    app.register_blueprint(popular.bp)
 
     app.add_url_rule("/", endpoint="index")
 

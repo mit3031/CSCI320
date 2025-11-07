@@ -1,0 +1,38 @@
+<!--
+The results screen for a popularity listing
+May be incorporated into other page as time goes on and
+    design vision for Phase 3 features becomes more defined
+It's just the results section of search/results.html, so it's barely my own work lol
+Author: Joseph Britton (jtb8595)
+-->
+
+{% extends "base.html" %}
+{% block title %}Popular Songs{% endblock %}
+
+{% block content %}
+{% for song in results %}
+<tr style="border-bottom: 1px solid #ddd;">
+    <td>{{ song.get('name', '—') }}</td>
+    <td>{{ song.get('artist', '—') }}</td>
+    <td>{{ song.get('album', '—') }}</td>
+    <td>{{ song.get('genre', '—') }}</td>
+    <td>{{ song.get('length', '—') }}</td>
+    <td>{{ song.get('release_date', '—') }}</td>
+    <td>{{ song.get('listen_count', 0) }}</td>
+    <td style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+        <form action="{{ url_for('search.play_song', song_id=song['song_id']) }}" method="POST">
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <button type="submit" style="padding: 6px 10px; border-radius: 50px; border: none; background-color: #28a745; color: white; font-weight: 500; cursor: pointer;">▶ Play</button>
+        </form>
+        <form action="{{ url_for('collections.add_track_view', song_id=song['song_id']) }}" method="POST"> <!-- Placeholder button -->
+            <button type="submit" style="padding: 6px 10px; border-radius: 50px; border: 1px solid #007BFF; background-color: white; color: #007BFF; font-weight: 500; cursor: pointer;">Add To Collections</button>
+        </form>
+    </td>
+</tr>
+{% else %}
+<tr>
+    <td colspan="8" style="padding: 12px; color: #6c757d;">No results found.</td>
+</tr>
+{% endfor %}
+{% for item in results %}
+{% endblock %}
