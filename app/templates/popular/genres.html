@@ -1,0 +1,29 @@
+<!--
+The results screen for a popularity listing
+May be incorporated into other page as time goes on and
+    design vision for Phase 3 features becomes more defined
+It's just the results section of search/results.html, so it's barely my own work lol
+Author: Joseph Britton (jtb8595)
+-->
+
+{% extends "base.html" %}
+{% block title %}Popular Genres{% endblock %}
+
+{% block content %}
+{% for genre in results %}
+<tr style="border-bottom: 1px solid #ddd;">
+    <td>{{ genre.get('name', '—') }}</td>
+    <td style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+        <form action="{{ url_for('search.search_songs') }}" method="POST">
+            <input type="hidden" name="search" value="{{ genre.get('name', '—') }}">
+            <input type="hidden" name="search_by" value="genre">
+            <button type="submit">Search songs from this genre</button>
+        </form>
+    </td>
+</tr>
+{% else %}
+<tr>
+    <td colspan="8" style="padding: 12px; color: #6c757d;">No results found.</td>
+</tr>
+{% endfor %}
+{% endblock %}

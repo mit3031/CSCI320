@@ -104,6 +104,59 @@ def followed_popular():
             return f"Database error: {e}", 500
         
         
-        return render_template("popular/results.html", results=results)
+        return render_template("popular/songs.html", results=results)
+    
+    return render_template("popular/popular.html")
+
+#
+# Retrives the top 5 genres of the month
+# Author: Joseph Britton (jtb8595)
+#
+@bp.route("/genre", methods=["GET", "POST"])
+@login_required
+def popular_genres():
+    if request.method == "POST":
+        db_conn = get_db()
+        try:
+            with db_conn.cursor() as curs:
+                curs.execute(
+                    'SELECT g.genre_id, g.name, popular.count ' \
+                    'FROM ' \
+                    '   (SELECT g.genre_id, COUNT(l.datetime_listened) AS count ' \
+                    '   FROM listentosong AS l ' \
+                    '   INNER JOIN songhasgenre AS h ON (h.song_id = l.song_id) ' \
+                    '   INNER JOIN genre AS g ON (g.genre_id = h.genre_id) ' \
+                    '   WHERE EXTRACT(YEAR FROM l.datetime_listened) = EXTRACT(YEAR FROM CURRENT_DATE) ' \
+                    '   AND EXTRACT(MONTH FROM l.datetime_listened) = EXTRACT(MONTH FROM CURRENT_DATE) ' \
+                    'GROUP BY g.genre_id) AS popular ' \
+                    'INNER JOIN genre AS g ON (g.genre_id = popular.genre_id) ' \
+                    'ORDER BY popular.count DESC ' \
+                    'LIMIT 5'
+                )
+
+                popular = curs.fetchall()
+                results = [] 
+
+                # Construct the results
+                for entry in popular:
+                    results.append({
+                        "genre_id": entry[0],
+                        "name": entry[1],
+                        "times_listened": entry[2]
+                    })
+
+                # Warning for debug: <5 is possible, >5 should not be.
+                if (len(results) > 5):
+                    print(f"There's {len(results)} entries in results, " +
+                        "which is supposed to be a top 5. Just a heads up." )
+                
+                db_conn.commit()
+        except psycopg.Error as e:
+            db_conn.rollback()
+            flash(f"Database error: {e}")
+            return f"Database error: {e}", 500
+        
+        
+        return render_template("popular/genres.html", results=results)
     
     return render_template("popular/popular.html")
