@@ -54,43 +54,8 @@ def followed_popular():
                     'INNER JOIN genre AS g ON (g.genre_id = shg.genre_id) ' \
                     'ORDER BY popular.times_listened DESC'
                 )
-                # popular[x] = [song id, song title, artist, album, genre, length, how many listens among followed users]
-                popular = curs.fetchall()
-                song_ids = [] # The ids of songs added to results (and which index they're at)
-
-                # results[x] = {id: song id, name: title, artist: artist name...
-                # ..., length: length, listen_count: how many times the FOLLOWED USERS have listened}
-                results = [] 
-
-                # Construct the results
-                for entry in popular:
-                        # check if the song is not already in results
-                        if entry[0] not in song_ids:
-                            # Not in results - add it
-                            results.append({
-                                "song_id": entry[0],
-                                "name": entry[1], 
-                                "artist": entry[2], 
-                                "album": entry[3], 
-                                "genre": entry[4],
-                                "length": entry[5],
-                                "release_date": entry[6],
-                                "listen_count": entry[7]
-                            })
-
-                            # Add song id to running list of ids
-                            song_ids.append(entry[0])
-                        else:
-                            toCheck = results[song_ids.index(entry[0])]
-                            # In results - add the artist to song information if not already there
-                            if entry[2] not in toCheck['artist']:
-                                results[song_ids.index(entry[0])]['artist'] += ", " + entry[2]
-                            # Do the same for album
-                            if entry[3] not in toCheck['album']:
-                                results[song_ids.index(entry[0])]['album'] += ", " + entry[3]
-                            # Do the same for genre
-                            if entry[4] and entry[4] not in toCheck['genre']:
-                                results[song_ids.index(entry[0])]['genre'] += ", " + entry[4]
+                # curs.fetchall[x] = [song id, song title, artist, album, genre, length, how many listens among followed users]
+                results = format_song_query_results(curs.fetchall())
 
                 # Warning for debug: <50 is possible, >50 should not be.
                 if (len(results) > 50):
@@ -107,6 +72,49 @@ def followed_popular():
         return render_template("popular/songs.html", results=results)
     
     return render_template("popular/popular.html")
+
+#
+# A helper function that properl formats the results of a song query
+# Author: Joseph Britton (jtb8595)
+#
+def format_song_query_results(select_array):
+    song_ids = [] # The ids of songs added to results (and which index they're at)
+
+    # results[x] = {id: song id, name: title, artist: artist name...
+    # ..., length: length, listen_count: how many times the FOLLOWED USERS have listened}
+    results = []
+
+    # Construct the results
+    for entry in select_array:
+            # check if the song is not already in results
+            if entry[0] not in song_ids:
+                # Not in results - add it
+                results.append({
+                    "song_id": entry[0],
+                    "name": entry[1], 
+                    "artist": entry[2], 
+                    "album": entry[3], 
+                    "genre": entry[4],
+                    "length": entry[5],
+                    "release_date": entry[6],
+                    "listen_count": entry[7]
+                })
+
+                # Add song id to running list of ids
+                song_ids.append(entry[0])
+            else:
+                toCheck = results[song_ids.index(entry[0])]
+                # In results - add the artist to song information if not already there
+                if entry[2] not in toCheck['artist']:
+                    results[song_ids.index(entry[0])]['artist'] += ", " + entry[2]
+                # Do the same for album
+                if entry[3] not in toCheck['album']:
+                    results[song_ids.index(entry[0])]['album'] += ", " + entry[3]
+                # Do the same for genre
+                if entry[4] and entry[4] not in toCheck['genre']:
+                    results[song_ids.index(entry[0])]['genre'] += ", " + entry[4]
+
+    return results
 
 #
 # Retrives the top 5 genres of the month
@@ -128,10 +136,11 @@ def popular_genres():
                     '   INNER JOIN genre AS g ON (g.genre_id = h.genre_id) ' \
                     '   WHERE EXTRACT(YEAR FROM l.datetime_listened) = EXTRACT(YEAR FROM CURRENT_DATE) ' \
                     '   AND EXTRACT(MONTH FROM l.datetime_listened) = EXTRACT(MONTH FROM CURRENT_DATE) ' \
+                    '   ORDER BY cound DESC ' \
+                    '   LIMIT 5' \
                     'GROUP BY g.genre_id) AS popular ' \
                     'INNER JOIN genre AS g ON (g.genre_id = popular.genre_id) ' \
-                    'ORDER BY popular.count DESC ' \
-                    'LIMIT 5'
+                    'ORDER BY popular.count DESC' \
                 )
 
                 popular = curs.fetchall()
